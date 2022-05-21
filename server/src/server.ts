@@ -17,7 +17,9 @@ import {
   TextDocumentPositionParams,
   TextDocumentSyncKind,
   InitializeResult,
-  ProgressType
+  ServerRequestHandler,
+  HandlerResult,
+  CodeAction
 } from 'vscode-languageserver/node';
 
 import { URI } from "vscode-uri";
@@ -62,9 +64,13 @@ connection.onInitialize((params: InitializeParams) => {
       // Tell the client that this server supports code completion.
       completionProvider: {
         resolveProvider: true
+      },
+      codeActionProvider: {
+        resolveProvider: true
       }
     }
   };
+
   if (hasWorkspaceFolderCapability) {
     result.capabilities.workspace = {
       workspaceFolders: {
@@ -74,6 +80,18 @@ connection.onInitialize((params: InitializeParams) => {
   }
   return result;
 });
+
+connection.onCodeAction((action) => {
+  console.log('onCodeAction', action)
+
+  const actions: CodeAction[] = [];
+
+  actions.push({
+    title: 'an action'
+  });
+
+  return actions;
+})
 
 connection.onInitialized(() => {
   if (hasConfigurationCapability) {
@@ -178,6 +196,9 @@ async function validateTextDocument(textDocument: TextDocument): Promise<void> {
 
   let problems = 0;
   const diagnostics: Diagnostic[] = [];
+
+  connection.sendDiagnostics({ uri: textDocument.uri, diagnostics });
+
   while ((m = pattern.exec(text)) && problems < settings.maxNumberOfProblems) {
     problems++;
     const diagnostic: Diagnostic = {
