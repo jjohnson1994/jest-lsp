@@ -11,15 +11,22 @@
 	"publisher": "vscode-samples",
 	"categories": [],
 	"keywords": [
+		"jest",
 		"multi-root ready"
 	],
 	"engines": {
 		"vscode": "^1.63.0"
 	},
 	"activationEvents": [
-		"onLanguage:plaintext"
+		"onLanguage:typescript",
+		"onLanguage:javascript",
+		"onLanguage:reacttypescript",
+		"onLanguage:reactjavascript"
 	],
-	"main": "./client/out/extension",
+	"main": "./server/out/server.js",
+	"bin": {
+		"jest-lsp": "./server/out/server.js"
+	},
 	"contributes": {
 		"configuration": {
 			"type": "object",

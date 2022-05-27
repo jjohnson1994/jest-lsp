@@ -1,3 +1,4 @@
+#!/usr/bin/env node
 /* --------------------------------------------------------------------------------------------
  * Copyright (c) Microsoft Corporation. All rights reserved.
  * Licensed under the MIT License. See License.txt in the project root for license information.
@@ -82,7 +83,7 @@ connection.onInitialize((params: InitializeParams) => {
 });
 
 connection.onCodeAction((action) => {
-  console.log('onCodeAction', action)
+  console.log('onCodeAction', action);
 
   const actions: CodeAction[] = [];
 
@@ -91,7 +92,7 @@ connection.onCodeAction((action) => {
   });
 
   return actions;
-})
+});
 
 connection.onInitialized(() => {
   if (hasConfigurationCapability) {
@@ -156,7 +157,7 @@ documents.onDidClose(event => {
 // The content of a text document has changed. This event is emitted
 // when the text document first opened or when its content has changed.
 documents.onDidChangeContent(event => {
-  // validateTextDocument(event.document);
+  validateTextDocument(event.document);
 });
 
 documents.onDidOpen(event => {
@@ -164,10 +165,10 @@ documents.onDidOpen(event => {
   validateTextDocument(event.document);
 });
 
-documents.onDidSave(event => {
+documents.onDidSave(event => {  
   console.log('onDidSave', event);
   validateTextDocument(event.document);
-})
+});
 
 async function validateTextDocument(textDocument: TextDocument): Promise<void> {
   // In this simple example we get the settings for every validate run.
@@ -175,13 +176,7 @@ async function validateTextDocument(textDocument: TextDocument): Promise<void> {
   const path = URI.parse(textDocument.uri).path;
   const isSpecFile = /\.spec\.|\.test\.g/.test(textDocument.uri);
 
-  console.log('starting jest for: ', path)
-
-  if (!isSpecFile) {
-    // TODO related tests should be run here instead
-    // jestCommandLine: `jest ${isSpecFile ? '' : '--findRelatedTests' } ${path}`
-    return;
-  }
+  console.log('starting jest for: ', path);
 
   // The validator creates diagnostics for all uppercase words length 2 and more
   const text = textDocument.getText();
@@ -198,6 +193,12 @@ async function validateTextDocument(textDocument: TextDocument): Promise<void> {
   const diagnostics: Diagnostic[] = [];
 
   connection.sendDiagnostics({ uri: textDocument.uri, diagnostics });
+
+  if (!isSpecFile) {
+    // TODO related tests should be run here instead
+    // jestCommandLine: `jest ${isSpecFile ? '' : '--findRelatedTests' } ${path}`
+    return;
+  }
 
   while ((m = pattern.exec(text)) && problems < settings.maxNumberOfProblems) {
     problems++;
