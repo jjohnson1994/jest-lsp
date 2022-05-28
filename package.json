@@ -8,57 +8,18 @@
 		"type": "git",
 		"url": "https://github.com/Microsoft/vscode-extension-samples"
 	},
-	"publisher": "vscode-samples",
-	"categories": [],
 	"keywords": [
 		"jest",
 		"multi-root ready"
 	],
-	"engines": {
-		"vscode": "^1.63.0"
-	},
-	"activationEvents": [
-		"onLanguage:typescript",
-		"onLanguage:javascript",
-		"onLanguage:reacttypescript",
-		"onLanguage:reactjavascript"
-	],
-	"main": "./server/out/server.js",
+	"main": "./dist/cli.js",
 	"bin": {
-		"jest-lsp": "./server/out/server.js"
-	},
-	"contributes": {
-		"configuration": {
-			"type": "object",
-			"title": "Example configuration",
-			"properties": {
-				"languageServerExample.maxNumberOfProblems": {
-					"scope": "resource",
-					"type": "number",
-					"default": 100,
-					"description": "Controls the maximum number of problems produced by the server."
-				},
-				"languageServerExample.trace.server": {
-					"scope": "window",
-					"type": "string",
-					"enum": [
-						"off",
-						"messages",
-						"verbose"
-					],
-					"default": "off",
-					"description": "Traces the communication between VS Code and the language server."
-				}
-			}
-		}
+		"jest-lsp": "./dist/cli.js"
 	},
 	"scripts": {
 		"vscode:prepublish": "npm run compile",
 		"compile": "tsc -b",
-		"watch": "tsc -b -w",
-		"lint": "eslint ./client/src ./server/src --ext .ts,.tsx",
-		"postinstall": "cd client && npm install && cd ../server && npm install && cd ..",
-		"test": "sh ./scripts/e2e.sh"
+		"watch": "tsc -b -w"
 	},
 	"devDependencies": {
 		"@types/mocha": "^9.1.0",
@@ -71,6 +32,9 @@
 	},
 	"dependencies": {
 		"jest-editor-support": "^30.0.2",
+		"vscode-languageserver": "^8.0.1",
+		"vscode-languageserver-textdocument": "^1.0.4",
+		"vscode-languageserver-types": "^3.17.1",
 		"vscode-uri": "^3.0.3"
 	}
 }
