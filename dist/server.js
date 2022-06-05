@@ -8,6 +8,28 @@ const jest_editor_support_1 = require("jest-editor-support");
 const init = () => {
     const connection = (0, node_1.createConnection)(node_1.ProposedFeatures.all);
     const documents = new node_1.TextDocuments(vscode_languageserver_textdocument_1.TextDocument);
+    connection.onInitialize((params) => {
+        const capabilities = params.capabilities;
+        // Does the client support the `workspace/configuration` request?
+        // If not, we fall back using global settings.
+        const hasConfigurationCapability = !!(capabilities.workspace && !!capabilities.workspace.configuration);
+        const hasWorkspaceFolderCapability = !!(capabilities.workspace && !!capabilities.workspace.workspaceFolders);
+        const hasDiagnosticRelatedInformationCapability = !!(capabilities.textDocument &&
+            capabilities.textDocument.publishDiagnostics &&
+            capabilities.textDocument.publishDiagnostics.relatedInformation);
+        return {
+            capabilities: {
+                textDocumentSync: node_1.TextDocumentSyncKind.Incremental,
+                // Tell the client that this server supports code completion.
+                completionProvider: {
+                    resolveProvider: true
+                }
+            }
+        };
+    });
+    connection.onDidChangeConfiguration(() => {
+        console.log('configuration changed');
+    });
     documents.onDidChangeContent(event => {
         validateTextDocument(event.document, connection);
     });
@@ -23,6 +45,7 @@ const init = () => {
 const validateTextDocument = async (textDocument, connection) => {
     const path = vscode_uri_1.URI.parse(textDocument.uri).path;
     const isSpecFile = /\.spec\.|\.test\.g/.test(textDocument.uri);
+    console.log('validating');
     // @ts-ignore runner does not need args
     const runner = new jest_editor_support_1.Runner({
         jestCommandLine: `jest ${path}`
@@ -64,10 +87,21 @@ const validateTextDocument = async (textDocument, connection) => {
         runner.closeProcess();
     });
     runner.on('executableOutput', () => {
+        console.log('executableOutput');
         runner.closeProcess();
     });
     runner.on('terminalError', () => {
+        console.log('terminalError');
         runner.closeProcess();
+    });
+    runner.on('processClose', () => {
+        console.log('processClose');
+    });
+    runner.on('processExit', () => {
+        console.log('processExit');
+    });
+    runner.on('executableStdErr', (error) => {
+        console.log('executableStdErr', error.toString());
     });
     runner.start();
 };
