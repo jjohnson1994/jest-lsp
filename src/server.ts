@@ -1,4 +1,5 @@
-const util = require('util');
+import { inspect } from "util"
+const { dirname } = require("path");
 
 import {
   createConnection,
@@ -75,14 +76,8 @@ const init = () => {
 
 const validateTextDocument = async (textDocument: TextDocument, connection: Connection): Promise<void> => {
   const path = URI.parse(textDocument.uri).path;
-  const isSpecFile = /\.spec\.|\.test\.g/.test(textDocument.uri);
-
-  console.log('validating');
-
-  // @ts-ignore runner does not need args
-  const runner = new Runner({
-    jestCommandLine: `jest ${path}`
-  });
+  const cwd = dirname(path);
+  const isSpecFile = /\.(spec|test)\.(j|t)s/g.test(textDocument.uri);
 
   const diagnostics: Diagnostic[] = [];
 
@@ -94,8 +89,16 @@ const validateTextDocument = async (textDocument: TextDocument, connection: Conn
     return;
   }
 
+  const jestRunnerConfig = {
+    jestCommandLine: `${cwd}/node_modules/.bin/jest ${path}`,
+    pathToJest: `${cwd}/node_modules/.bin/jest`
+  };
+  
+  // @ts-ignore runner does not need args
+  const runner = new Runner(jestRunnerConfig);
+
   runner.on('executableJSON', (jestTotalResults: JestTotalResults) => {
-    console.log('got total results', util.inspect(jestTotalResults, false, null));
+    console.log('got total results', inspect(jestTotalResults, false, null));
 
     jestTotalResults.testResults.forEach(testResult => {
       testResult.assertionResults.forEach(assertionResult => {

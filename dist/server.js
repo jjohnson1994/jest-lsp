@@ -1,6 +1,7 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-const util = require('util');
+const util_1 = require("util");
+const { dirname } = require("path");
 const node_1 = require("vscode-languageserver/node");
 const vscode_uri_1 = require("vscode-uri");
 const vscode_languageserver_textdocument_1 = require("vscode-languageserver-textdocument");
@@ -44,12 +45,8 @@ const init = () => {
 };
 const validateTextDocument = async (textDocument, connection) => {
     const path = vscode_uri_1.URI.parse(textDocument.uri).path;
-    const isSpecFile = /\.spec\.|\.test\.g/.test(textDocument.uri);
-    console.log('validating');
-    // @ts-ignore runner does not need args
-    const runner = new jest_editor_support_1.Runner({
-        jestCommandLine: `jest ${path}`
-    });
+    const cwd = dirname(path);
+    const isSpecFile = /\.(spec|test)\.(j|t)s/g.test(textDocument.uri);
     const diagnostics = [];
     connection.sendDiagnostics({ uri: textDocument.uri, diagnostics });
     if (!isSpecFile) {
@@ -57,8 +54,14 @@ const validateTextDocument = async (textDocument, connection) => {
         // jestCommandLine: `jest ${isSpecFile ? '' : '--findRelatedTests' } ${path}`
         return;
     }
+    const jestRunnerConfig = {
+        jestCommandLine: `${cwd}/node_modules/.bin/jest ${path}`,
+        pathToJest: `${cwd}/node_modules/.bin/jest`
+    };
+    // @ts-ignore runner does not need args
+    const runner = new jest_editor_support_1.Runner(jestRunnerConfig);
     runner.on('executableJSON', (jestTotalResults) => {
-        console.log('got total results', util.inspect(jestTotalResults, false, null));
+        console.log('got total results', (0, util_1.inspect)(jestTotalResults, false, null));
         jestTotalResults.testResults.forEach(testResult => {
             testResult.assertionResults.forEach(assertionResult => {
                 if (assertionResult.failureMessages.length === 0) {
